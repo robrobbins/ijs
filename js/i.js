@@ -240,7 +240,8 @@ if(!I.amCompiled) {
 		// TODO envi isHTml()
 		if(!this._dependencies.written[src]) {
 			this._dependencies.written[src] = true;
-			this.doc.write('<script type="text/javascript" src="'+src+'"></script>');
+			this.doc.write('<script type="text/javascript" src="' + src + 
+				'"></' + 'script>');
 		}
 	};
 }

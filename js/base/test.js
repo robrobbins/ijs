@@ -1,11 +1,10 @@
-I.provide('site.test');
-I.require(['jQuery','tooltip','bgiframe','delegate','dimensions','RML',
-	'site.awesome']);
+I.provide('base.test');
+I.require('base.awesome');
 
 
 $(document).ready(function() {
 	// setup a method to call when tooltips are ready
-	site.test.tooltips = function() {
+	base.test.tooltips = function() {
 		this.show('So, mouse over the "What\'s this for? thing"');
 		$("#hovered").tooltip({ 
 			bodyHandler: function() { 
@@ -15,7 +14,7 @@ $(document).ready(function() {
 	  });
 	};
 
-	site.test.show = function(str) {
+	base.test.show = function(str) {
 		// show stuff in the textarea
 		var ta = $('#ta_output');
 		curr_val = [ta.val()];
@@ -23,13 +22,13 @@ $(document).ready(function() {
 		ta.val(curr_val.join('\n'));
 	};
 	
-	site.test.show('jQuery and RML are loaded and parsed now');
+	base.test.show('jQuery, plugins and RML are loaded and parsed now');
 		// the required ra.js script provided these
-	site.test.show(site.awesome.hello());
+	base.test.show(base.awesome.hello());
 	
 	$('#btn_tt').click(function() {
-		site.test.show('All dependencies are loaded and parsed');
-		site.test.tooltips();
+		base.test.show('All dependencies are loaded and parsed');
+		base.test.tooltips();
 	});
 	
 });
