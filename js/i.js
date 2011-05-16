@@ -16,6 +16,49 @@ var I = I || {};
  */
 I.amCompiled = false;
 /**
+ * If a specified namespace is not defined yet this method
+ * maintains a queue of functions to call when it becomes available
+ * @param {String|Array} ns The namespace to check for, either 
+ * a string or an array of strings
+ * @param fn The function to call when ns = true
+ */
+I.amDefined = function(ns, fn) {
+	var i, curr, nsa, nss, args=[], undef = 0;
+	// Normalize the inputs
+	if(typeof ns === 'string') {
+		nsa = ns.split('&');
+	} else {
+		nsa = ns;
+	}
+	if(typeof fn !== 'function') {
+		throw Error('Second argument must be a function');
+	}
+	// if dependencies are defined, save a ref in args
+	for(i=0; i < nsa.length; i++) {
+		curr = this.getObjectByName(nsa[i]) 
+		if(curr) {
+			args.push(curr);
+		} else undef++;
+	}
+	// then pass them to the callback
+	if(!undef) {
+		fn.apply(this.global, args);
+	} else {
+		// one only, assign to nss as is
+		if(nsa.length === 1) nss = nsa[0];
+		// multiple left, make a composite key and assign it to nss
+		else nss = nsa.join('&');
+		if (!(nss in this._amWaiting)) {
+			this._amWaiting[nss] = fn;
+		}
+	}
+};
+/**
+ * The queue for waiting namespaces and their callbacks
+ * @private
+ */
+I._amWaiting = {};
+/**
  * Path for included scripts
  * @type {string}
  */
@@ -237,10 +280,14 @@ if(!I.amCompiled) {
 	 * @private
 	 */
 	I._writeScriptTag = function(src) {
-		// TODO envi isHTml()
+		alert(src);
 		if(!this._dependencies.written[src]) {
 			this._dependencies.written[src] = true;
 			this.doc.write('<script type="text/javascript" src="'+src+'"></script>');
+			// now set a listener on the newest script element to fire so that
+			// any waiting callbacks can be checked
+			var scripts = this.doc.getElementsByTagName('script');
+			alert(scripts.length);
 		}
 	};
 }
