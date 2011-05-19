@@ -6,7 +6,7 @@ The async version can be found [here](http://www.github.com/robrobbins/I).
 __Development__ mode features a familiar *I.provide(...)* and *I.require(...)* API
 that resolves each files dependencies before injecting script tags into the dom.
 __Production__ mode strips the *require(...)* calls from your scripts and minifies
-them all into a single file for effeciency.
+them all into a single file.
 
 ##Quick and Dirty Tour Pt1.
 
