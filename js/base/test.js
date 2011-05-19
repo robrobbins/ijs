@@ -1,4 +1,10 @@
 I.provide('base.test');
+I.require('jQuery');
+I.require('bgiframe');
+I.require('dimensions');
+I.require('delegate');
+I.require('tooltip');
+I.require('RML');
 I.require('base.awesome');
 
 
@@ -8,7 +14,7 @@ $(document).ready(function() {
 		this.show('So, mouse over the "What\'s this for? thing"');
 		$("#hovered").tooltip({ 
 			bodyHandler: function() { 
-				return "ITS FOR A TOOLTIP!!!";
+				return RML.p("ITS FOR A TOOLTIP!!!");
 			}, 
 			showURL: false
 	  });

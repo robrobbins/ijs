@@ -16,10 +16,27 @@ var I = I || {};
  */
 I.amCompiled = false;
 /**
- * Path for included scripts
- * @type {string}
+ *
  */
-I.basePath = 'js';
+I.define = function(path, provides, requires) {
+	if (!this.amCompiled) {
+		var provide, require;
+		var deps = this._dependencies;
+		for (var i = 0; provide = provides[i]; i++) {
+			deps.nameToPath[provide] = path;
+			if (!(path in deps.pathToNames)) {
+				deps.pathToNames[path] = {};
+			}
+			deps.pathToNames[path][provide] = true;
+		}
+		for (var j = 0; require = requires[j]; j++) {
+			if (!(path in deps.requires)) {
+				deps.requires[path] = {};
+			}
+			deps.requires[path][require] = true;
+		}
+	}
+};
 /**
  * Reference for the current document.
  */
@@ -85,26 +102,6 @@ I.getObjectByName = function(name, scope) {
  */
 I.global = this;
 /**
- * A hook for the compiler to override basePath
- * @type {string|undefined}
- */
-I.global.BASE_PATH = '';
-/**
- * An object whose keys are the provided namespace of a third-party
- * dependency and whose values are the path to that file. These paths
- * can be local or hosted via cdn. The I.basePath var is not used here
- * so specify the relative path to the file
- * @type {Object}
- */
-I.include = {
-	'jQuery': 'http://code.jquery.com/jquery-1.6.1.min.js',
-	'bgiframe': 'js/plugins/bgiframe.js',
-	'delegate': 'js/plugins/delegate.js',
-	'dimensions': 'js/plugins/dimensions.js',
-	'tooltip': 'js/plugins/tooltip.js',
-	'RML': 'js/plugins/rml.js'
-};
-/**
  * Creates object stubs for a namespace. When present in a file, I.provide
  * also indicates that the file defines the indicated object.
  * @param {string} name name of the object that this file defines
@@ -128,21 +125,25 @@ I.provide = function(name) {
  * @param {string} module to include, in the form foo.bar.baz
  */
 I.require = function(ns) {
-	// allow for an array to be passed
-	if(typeof ns !== 'string') {
-		for(var n; n = ns.shift(); ) {
-			this.require(n);
-		}
-		return;
-	}
-	var deps = this._dependencies;
-	// if the object already exists we do not need do do anything
 	if (!this.amCompiled) {
+	// allow for an array to be passed
+		if(typeof ns !== 'string') {
+			for(var n; n = ns.shift(); ) {
+				this.require(n);
+			}
+			return;
+		}
+		// if the object already exists we do not need do do anything
 		if (this.getObjectByName(ns)) {
 			return;
 		}
-		this._included[this._setPath(ns)] = true;
-		this._writeScripts();
+		var path = this._getPath(ns);
+		if(path) {
+			this._included[path] = true;
+			this._writeScripts();
+		} else {
+			throw Error('Undefined dependency' + ns);
+		}
 	}
 };
 
@@ -154,23 +155,25 @@ if(!I.amCompiled) {
 	 * @type {Object}
 	 */
 	I._dependencies = {
-	visited: {},
-	written: {} // used to keep track of script files we have written
+		pathToNames: {},
+		nameToPath: {},
+		requires: {},
+		visited: {},
+		written: {}
 	};
-	/**
-	 * Using the 'convention over configuration' approach a provided namespace
-	 * 'site.foo' is expected to resolve to a physical file at
-	 * basePath/site/foo.js
-	 * @param {string} path In the form foo.bar
-	 * @return {?string} Url corresponding to the path.
-	 * @private
-	 */
-	I._setPath = function(ns) {
-		// check for third party
-		if(ns in this.include) return this.include[ns];
-		var arr = ns.split('.');
-		arr.unshift(this.basePath);
-		return arr.join('/') + '.js';
+  /**
+   * Looks at the dependency rules and tries to determine the script file that
+   * provides a particular namespace.
+   * @param {string} ns In the form foo.bar
+   * @return {?string} path to the script, or null.
+   * @private
+   */
+	I._getPath = function(ns) {
+		if (ns in this._dependencies.nameToPath) {
+			return this._dependencies.nameToPath[ns];
+		} else {
+			return null;
+		}
 	};
 	/**
 	 * Object used to keep track of urls that have already been added. This
@@ -212,6 +215,20 @@ if(!I.amCompiled) {
 				return;
 			}
 			deps.visited[path] = true;
+			
+			if (path in deps.requires) {
+				for (var requireName in deps.requires[path]) {
+					if (requireName in deps.nameToPath) {
+						visitNode(deps.nameToPath[requireName]);
+					} else if (!I.getObjectByName(requireName)) {
+						// If the required name is defined, we assume that this
+						// dependency was bootstapped by other means. Otherwise,
+						// throw an exception.
+						throw Error('Undefined nameToPath for ' + requireName);
+					}
+				}
+			}
+			
 			if(!(path in seenScript)) {
 				seenScript[path] = true;
 				scripts.push(path);
@@ -237,11 +254,13 @@ if(!I.amCompiled) {
 	 * @private
 	 */
 	I._writeScriptTag = function(src) {
-		// TODO envi isHTml()
 		if(!this._dependencies.written[src]) {
 			this._dependencies.written[src] = true;
 			this.doc.write('<script type="text/javascript" src="' + src + 
 				'"></' + 'script>');
 		}
 	};
+	
+	// write the boot script in
+	I._writeScriptTag('js/bootstrap.js');
 }
