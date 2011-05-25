@@ -6,7 +6,7 @@ require 'net/http'
 require 'uri'
 
 CFG = YAML.load_file('config.yaml') unless defined? CFG
-DM = CFG['demaximizer']
+DM = CFG['demaximizer'] unless defined? DM
 
 module Demaximizer
   # write the minified js to the file and return it

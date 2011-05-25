@@ -27,17 +27,17 @@ module Dependencies
       # open the file and read it
       puts "opening #{file}"
       f = File.open(file)
-      txt = f.read
+      # save this so we can minify it later
+      dep.txt = f.read
       f.close
       # iterate each line and look for statements
-      txt.each_line {|line|
+      dep.txt.each_line {|line|
         if data = @re_provides.match(line)
           is_dep = true
           data.captures.each {|i|
             dep.provides_push(i)
           }
-        end
-        if mdata = @re_requires.match(line)
+        elsif mdata = @re_requires.match(line)
           is_dep = true
           mdata.captures.each {|i|
             dep.requires_push(i)
@@ -48,18 +48,22 @@ module Dependencies
     }
   end
 
-  def self.add_plugins(files, plugin_dirs, dep_on)
+  def self.add_plugins(files, plugin_dirs)
     # if the file is in the plugin_dir, remove its .js extension and use
     # that as the provided namespace
     sources = Set.new(files)
     sources.each {|file|
       dep = Dependant.new(file)
-      # ven_dir should have been hashed already
-      if plugin_dirs.include? File.dirname(file) 
+      # for aggregation to a single file later
+      # TODO we could strip the comments
+      puts "opening plugin #{file}"
+      f = File.open(file)
+      dep.txt = f.read
+      f.close
+      dep.is_vendor = true
+      if plugin_dirs.include? File.dirname(file)
         dep.provides_push(File.basename(file, '.js'))
-        if dep_on
-          dep_on.each {|d| dep.requires_push(d)}
-        end
+        dep.requires_push(plugin_dirs[File.dirname(file)])
         @all.unshift(dep)
       end
     }
@@ -71,6 +75,13 @@ module Dependencies
     sources = Set.new(files)
     sources.each {|file|
       dep = Dependant.new(file)
+      # for aggregation to a single file later
+      # TODO we could strip the comments
+      puts "opening plugin #{file}"
+      f = File.open(file)
+      dep.txt = f.read
+      f.close
+      dep.is_vendor = true
       # ven_dir should have been hashed already
       if ven_dirs.include? File.dirname(file)
         dep.provides_push(File.basename(file, '.js'))
@@ -84,6 +95,7 @@ module Dependencies
     cdns.each {|k, v|
       # v should be the actual URI of the dependency
       dep = Dependant.new(v)
+      dep.is_cdn = true
       # it provides a namespace object
       dep.provides_push(k)
       @all.unshift(dep)
@@ -141,5 +153,10 @@ module Dependencies
 
   def self.matched
     @matched
+  end
+  
+  # depwriter will re-use this in production mode
+  def self.re_requires
+    @re_requires
   end
 end

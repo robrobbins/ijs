@@ -1,8 +1,49 @@
 depwriter:
+  # what to call the development-mode bootstrap file.
+  bootstrap: bootstrap.js
+  # Dependencies which are CDN hosted by provided name and URL adress.
+  # NOTE: place them in the order you would like them written
+  cdn_hosted:
+    jQuery: 'http://code.jquery.com/jquery-1.6.1.min.js'
+  # Tell depwriter to either prepare the project for production or return it
+  # to a development state. Choices are 'production', 'development'.
+  environment: production
+  # Directory paths (relative to root) to exclude from searching for deps.
+  # This is particularly useful for testing suites as when you move to
+  # production you can simply add the folder name here
+  exc_dirs: 
+    - js/tests/lib
+  # Ignore these files when found. Yet another way to control i's recursive 
+  # search of your project folder for dependencies. Out of the box you should
+  # be ignoring i.js itself, 'bootstrap', and 'min_file_name'
+  exc_files:
+    -js/i.js
+    -js/bootstrap.js
+    -js/production.js
   # From where depwriter.rb is, how far up until the root of your project?
   i_root: ../
   # what is the name of the folder i.js is in?
   i_dir: js
+  # Tell the depwriter the filename of your layout/masterpage
+  # (you do have only one right?). This will be where, when in 'production'
+  # mode, depwriter places script tags for CDN-hosted files, 'min_file_name' and
+  # removes the require('bootstrap') call. When in 'development' mode the
+  # cdn-hosted, and 'min_file_name' tags are removed, and the 
+  # require('bootstrap') call is added.
+  layout: i.html
+  # what to call the minified file created in 'production' mode
+  min_file_name: production.js
+  # do you want depwriter to modify your layout/master pages for you?
+  # Set to false if you would rather do it by hand. The modifications are
+  # 1. writing/removing tags for CDN-hosted deps
+  # 2. writing/removing the require() call for your bootstrap file in dev mode
+  # 3. writing/removing the script tag for your min_file in production mode
+  mod_layout: true
+  # For third party scripts that you need to add a dependency to. For example, 
+  # jQuery plugins need to have 'jQuery' as a dependency. The value will be 
+  # inserted as a 'require' for and dependency found in the directory
+  plugin_dirs:
+    js/plugins: 'jQuery'
   # Some environments will want a segment of the path for js files removed
   # before being served depending on environment. For example to remove the 
   # 'public/' path segment from a file found in 'public/scripts/foo.js' you 
@@ -18,35 +59,12 @@ depwriter:
   search_ext: 
     - js
     - html
-  # Directory paths (relative to root) to exclude from searching 
-  # for dependencies. This is another
-  # way of controlling what scripts would be indexed as dependencies.
-  # This is particularly useful for testing suites as when you move to
-  # production you can simply add the folder name here
-  exc_dirs: 
-    - js/tests/lib
   # Directory paths (relative to root) where third party javascript files are 
   # that you want added to the minified file. Since these files will not have any 
   # 'define' or 'require' statements they normally wouldn't be detected. Also
   # these files are expected to be minified already (Our minifier wont touch them)
   ven_dirs:
     - js/vendor
-  # Dependencies which are CDN hosted by provided name and URL adress
-  # TODO document the //... workaround for https:// with IE
-  cdn_hosted:
-    'jQuery': 'http://code.jquery.com/jquery-1.6.1.min.js'
-  # For third party scripts that you need to add a dependency to. Fr example, 
-  # jQuery plugins need to have 'jQuery' as a dependency. The value(s) from 
-  # 'plugin_dep' will be inserted as dependency for those files
-  plugin_dirs:
-    - js/plugins
-  plugin_dep:
-    - 'jQuery'
-  # what to call the minified file
-  min_file_name: 'production.js'
-  # Tell depwriter to either prepare the project for production or return it
-  # to a development state. Choices are 'production', 'development'
-  environment: development
 
 # A module, mixed in to the Dependant class, that allows it to minify itself.
 # I am using the Closure REST service but you can write you own demaximizer

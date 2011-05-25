@@ -14,12 +14,12 @@ var I = I || {};
  * @define {boolean} Used for the compiler of choice. Written to true when your
  * sources have been minified and combined
  */
-I.amCompiled = false;
+I.amInProduction = true;
 /**
  *
  */
 I.define = function(path, provides, requires) {
-	if (!this.amCompiled) {
+	if (!this.amInProduction) {
 		var provide, require;
 		var deps = this._dependencies;
 		for (var i = 0; provide = provides[i]; i++) {
@@ -46,14 +46,14 @@ I.doc = document;
  * ensuring that names that already exist are not overwritten. For
  * example:
  * "a.b.c" -> a = {};a.b={};a.b.c={};
- * Used by X.provide
+ * Used by I.provide
  * @param {string} name name of the object that this file defines.
  * @param {*=} obj the object to expose at the end of the path.
  * @param {Object=} scope The object to add the path to; default
- * is X.global.
+ * is I.global.
  * @private
  */
-I._exportPath = function(name, obj, scope) {
+I._exportNamespace = function(name, obj, scope) {
 	var parts = name.split('.');
 	var cur = scope || this.global;
 
@@ -85,7 +85,7 @@ I._exportPath = function(name, obj, scope) {
  * @param {Object=} scope The object within which to look. Default is I.global.
  * @return {Object} The object or, if not found, null.
  */
-I.getObjectByName = function(name, scope) {
+I.getNamespace = function(name, scope) {
 	var parts = name.split('.');
 	var cur = scope || this.global;
 	for (var part; part = parts.shift(); ) {
@@ -107,17 +107,17 @@ I.global = this;
  * @param {string} name name of the object that this file defines
  */
 I.provide = function(name) {
-	if(!this.amCompiled) {
+	if(!this.amInProduction) {
 		// Ensure that the same namespace isn't provided twice.
-		if(this.getObjectByName(name) && !this._ns[name]) {
-				throw Error('Namespace "' + name + '" already declared.');
+		if(this.getNamespace(name) && !this._ns[name]) {
+				throw Error('Namespace "' + name + '" already defined.');
 		}
 		var namespace = name;
 		while ((namespace = namespace.substring(0, namespace.lastIndexOf('.')))) {
 			this._ns[namespace] = true;
 		}
 	}
-	this._exportPath(name);
+	this._exportNamespace(name);
 };
 /**
  * Implements a system for the dynamic resolution of dependencies.
@@ -125,7 +125,7 @@ I.provide = function(name) {
  * @param {string} module to include, in the form foo.bar.baz
  */
 I.require = function(ns) {
-	if (!this.amCompiled) {
+	if (!this.amInProduction) {
 	// allow for an array to be passed
 		if(typeof ns !== 'string') {
 			for(var n; n = ns.shift(); ) {
@@ -134,20 +134,31 @@ I.require = function(ns) {
 			return;
 		}
 		// if the object already exists we do not need do do anything
-		if (this.getObjectByName(ns)) {
+		if (this.getNamespace(ns)) {
 			return;
 		}
 		var path = this._getPath(ns);
 		if(path) {
 			this._included[path] = true;
-			this._writeScripts();
+			this._resolveScripts();
 		} else {
 			throw Error('Undefined dependency' + ns);
 		}
 	}
 };
-
-if(!I.amCompiled) {
+if(I.amInProduction) {
+	/**
+	 * Writes a script tag for the aggregated-minified production file.
+	 * @param {string} src Script source.
+	 * @private
+	 */
+	I._writeScriptTag = function(src) {
+		this.doc.write('<script type="text/javascript" src="' + src + 
+			'"></' + 'script>');
+	};
+		// depwriter will set this for you
+	I._writeScriptTag('js/production.js');
+} else {
 	/**
 	 * This object is used to keep track of dependencies and other data that is
 	 * used for loading scripts
@@ -195,13 +206,13 @@ if(!I.amCompiled) {
 	 * and calls _writeScriptTag in the correct order.
 	 * @private
 	 */
-	I._writeScripts = function() {
+	I._resolveScripts = function() {
 		// the scripts we need to write this time
 		var scripts = [];
 		var seenScript = {};
 		var deps = this._dependencies;
 
-		/** @private */ function visitNode(path) {
+		/** @private */ function RFS(path) { // requires-first-search ;)
 			if(path in deps.written) {
 				return;
 			}
@@ -219,8 +230,8 @@ if(!I.amCompiled) {
 			if (path in deps.requires) {
 				for (var requireName in deps.requires[path]) {
 					if (requireName in deps.nameToPath) {
-						visitNode(deps.nameToPath[requireName]);
-					} else if (!I.getObjectByName(requireName)) {
+						RFS(deps.nameToPath[requireName]);
+					} else if (!I.getNamespace(requireName)) {
 						// If the required name is defined, we assume that this
 						// dependency was bootstapped by other means. Otherwise,
 						// throw an exception.
@@ -233,17 +244,17 @@ if(!I.amCompiled) {
 				seenScript[path] = true;
 				scripts.push(path);
 			}
-		} // end visitNode
+		} // end RFS
 		for(var path in this._included) {
 			if(!deps.written[path]) {
-				visitNode(path);
+				RFS(path);
 			}
 		}
 		for(var i = 0; i < scripts.length; i++) {
 			if(scripts[i]) {
 				this._writeScriptTag(scripts[i]);
 			} else {
-				throw Error('Undefined script input');
+				throw Error('Undefined script');
 			}
 		}
 	};
@@ -260,7 +271,6 @@ if(!I.amCompiled) {
 				'"></' + 'script>');
 		}
 	};
-	
-	// write the boot script in
-	I._writeScriptTag('js/bootstrap.js');
+	// auto set by depwriter
+	I._writeScriptTag('js/production.js');
 }

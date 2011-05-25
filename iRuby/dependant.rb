@@ -2,11 +2,19 @@ require 'set'
 require './demaximizer.rb'
 # An instance of a dependency object
 class Dependant
+  include Demaximizer
+  
+  attr_accessor :is_vendor, :is_cdn, :txt
   
   def initialize(filename)
     @filename = filename
     @provides = []
     @requires = []
+    # is_vendor implies a third party script that isn't cdn
+    @is_vendor = false
+    # yes this is third party, but we don't physically have it
+    @is_cdn = false
+    @txt = nil
   end
   
   def filename; @filename; end
