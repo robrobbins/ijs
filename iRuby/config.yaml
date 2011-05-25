@@ -33,12 +33,6 @@ depwriter:
   layout: i.html
   # what to call the minified file created in 'production' mode
   min_file_name: production.js
-  # do you want depwriter to modify your layout/master pages for you?
-  # Set to false if you would rather do it by hand. The modifications are
-  # 1. writing/removing tags for CDN-hosted deps
-  # 2. writing/removing the require() call for your bootstrap file in dev mode
-  # 3. writing/removing the script tag for your min_file in production mode
-  mod_layout: true
   # For third party scripts that you need to add a dependency to. For example, 
   # jQuery plugins need to have 'jQuery' as a dependency. The value will be 
   # inserted as a 'require' for and dependency found in the directory
