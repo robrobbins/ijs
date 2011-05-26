@@ -73,7 +73,7 @@ Some third party scripts rely on other scripts but you wouldn't want to have to
 modify their source. For example jQuery plugins obviously rely on jQuery. Any
 scripts found in the *plugin_dirs* (see config.yaml) will be treated the same as
 files found in the *ven_dirs* (again, see config.yaml) with one exception. The 
-value stored in the *config.yaml* __plugin_dep__ will be inserted as a dependency
+value stored along with their key (the directory itself) will be inserted as a dependency
 for them. This will keep the plugins from trying to initalize before their 
 'parent' object is ready
 
