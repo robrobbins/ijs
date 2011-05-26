@@ -44,6 +44,7 @@ module Utils
   end
   
   def self.mod_i
+    cdn_tag_index = []
     # read in the i.js file
     i_js = File.open('i.js', 'r')
     i_array = i_js.readlines("\n")
@@ -64,13 +65,22 @@ module Utils
           if @re_mode.match(line)
             i_array[idx] = line.sub(@re_mode, @MODE_PRO)
           elsif @re_write_script_tag.match(line)
-            i_array[idx] = line.sub(@re_write_script_tag, @TAG_PRO)
+            cdn_tag_index.push(idx)
+            i_array[idx] = line.sub(@re_write_script_tag, @TAG_PRO)            
           end
         }
+        # place writeScript calls for the cdn-hosted deps, if any, before
+        # the production file is written. Make sure to remove them if you
+        # re-enter development mode from production
+        if DW['cdn_hosted'].size > 0
+          DW['cdn_hosted'].each {|k,v|
+            # the first one is where we want them
+            i_array.insert(cdn_tag_index[0], "  I._writeScriptTag('#{v}');\n")
+          }
+        end
       end
       # overwrite the old i.js
       i.puts i_array.join('')
     end
   end
-  
 end
