@@ -202,7 +202,7 @@ if(I.amInProduction) {
    */
   I._ns = {};
   /**
-   * Resolves dependencies based on the dependencies added using addDependency
+   * Resolves dependencies based on the dependencies added using define()
    * and calls _writeScriptTag in the correct order.
    * @private
    */
