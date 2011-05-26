@@ -7,6 +7,8 @@ module Utils
   @source_files = []
   @re_mode = Regexp.new('I\.amInProduction\s*=\s*([\w]+);')
   @re_write_script_tag = Regexp.new('I._writeScriptTag\([\'\"]([A-Za-z\/.-_]+)[\'\"]\);')
+  @re_cdn_begin = Regexp.new('\/\/ BEGIN DW-CDN')
+  @re_cdn_end = Regexp.new('\/\/ END DW-CDN')
   @MODE_PRO = 'I.amInProduction = true;'
   @MODE_DEV = 'I.amInProduction = false;'
   @TAG_DEV = "I._writeScriptTag('#{DW['i_dir']}/#{DW['bootstrap']}');"
@@ -44,7 +46,8 @@ module Utils
   end
   
   def self.mod_i
-    cdn_tag_index = []
+    begin_cdn_idx = 0
+    end_cdn_idx = 0
     # read in the i.js file
     i_js = File.open(DW['i_v'], 'r')
     i_array = i_js.readlines("\n")
@@ -57,16 +60,23 @@ module Utils
             i_array[idx] = line.sub(@re_mode, @MODE_DEV)
           elsif @re_write_script_tag.match(line)
             i_array[idx] = line.sub(@re_write_script_tag, @TAG_DEV)
+          elsif @re_cdn_begin.match(line)
+            begin_cdn_idx = idx
+          elsif @re_cdn_end.match(line)
+            end_cdn_idx = idx
           end
         }
+        # delete the lines in between the *_cdn_idx if any
+        i_array.slice!(begin_cdn_idx + 1, end_cdn_idx - (begin_cdn_idx + 1))
       else
         # assume we are in production
         i_array.each_with_index {|line, idx| 
           if @re_mode.match(line)
             i_array[idx] = line.sub(@re_mode, @MODE_PRO)
           elsif @re_write_script_tag.match(line)
-            cdn_tag_index.push(idx)
-            i_array[idx] = line.sub(@re_write_script_tag, @TAG_PRO)            
+            i_array[idx] = line.sub(@re_write_script_tag, @TAG_PRO)
+          elsif @re_cdn_end.match(line)
+            end_cdn_idx = idx            
           end
         }
         # place writeScript calls for the cdn-hosted deps, if any, before
@@ -74,8 +84,7 @@ module Utils
         # re-enter development mode from production
         if DW['cdn_hosted'].size > 0
           DW['cdn_hosted'].each {|k,v|
-            # the first one is where we want them
-            i_array.insert(cdn_tag_index[0], "  I._writeScriptTag('#{v}');\n")
+            i_array.insert(end_cdn_idx, "  I._writeScriptTag('#{v}');\n")
           }
         end
       end

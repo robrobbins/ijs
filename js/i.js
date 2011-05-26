@@ -156,7 +156,8 @@ if(I.amInProduction) {
     this.doc.write('<script type="text/javascript" src="' + src + 
       '"></' + 'script>');
   };
-  // depwriter will set this for you
+    // BEGIN DW-CDN
+    // END DW-CDN 
   I._writeScriptTag('js/bootstrap.js');
 } else {
   /**
