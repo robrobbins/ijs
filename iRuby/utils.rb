@@ -46,10 +46,10 @@ module Utils
   def self.mod_i
     cdn_tag_index = []
     # read in the i.js file
-    i_js = File.open('i.js', 'r')
+    i_js = File.open(DW['i_v'], 'r')
     i_array = i_js.readlines("\n")
     i_js.close
-    f = File.open('i.js', 'w') do |i|
+    f = File.open(DW['i_v'], 'w') do |i|
       # modify where appropriate
       if DW['environment'] == 'development'
         i_array.each_with_index {|line, idx| 

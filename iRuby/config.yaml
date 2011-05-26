@@ -7,7 +7,7 @@ depwriter:
     jQuery: 'http://code.jquery.com/jquery-1.6.1.min.js'
   # Tell depwriter to either prepare the project for production or return it
   # to a development state. Choices are 'production', 'development'.
-  environment: development
+  environment: production
   # Directory paths (relative to root) to exclude from searching for deps.
   # This is particularly useful for testing suites as when you move to
   # production you can simply add the folder name here
@@ -18,19 +18,16 @@ depwriter:
   # be ignoring i.js itself, 'bootstrap', and 'min_file_name'
   exc_files:
     -js/i.js
+    -js/i.min.js
     -js/bootstrap.js
     -js/production.js
   # From where depwriter.rb is, how far up until the root of your project?
   i_root: ../
   # what is the name of the folder i.js is in?
   i_dir: js
-  # Tell the depwriter the filename of your layout/masterpage
-  # (you do have only one right?). This will be where, when in 'production'
-  # mode, depwriter places script tags for CDN-hosted files, 'min_file_name' and
-  # removes the require('bootstrap') call. When in 'development' mode the
-  # cdn-hosted, and 'min_file_name' tags are removed, and the 
-  # require('bootstrap') call is added.
-  layout: i.html
+  # are you using the minified version of i.js or the un-minified?
+  # choices are 'i.js' or 'i.min.js'
+  i_v: i.min.js
   # what to call the minified file created in 'production' mode
   min_file_name: production.js
   # For third party scripts that you need to add a dependency to. For example, 
