@@ -27,7 +27,7 @@ Dependencies.add_plugins(Utils.source_files, DW['plugin_dirs'])
 # put the hash together
 Dependencies.build_matched_hash
 if Dependencies.resolve_deps
-  puts "All depencies resolved, writing deps file. Moving to 'i_dir'"
+  puts "All depencies resolved, writing bootstrap file. Moving to 'i_dir'"
   # get the deps
   matched = Dependencies.matched
   Dir.chdir(DW['i_dir'])
@@ -59,7 +59,27 @@ if Dependencies.resolve_deps
       elsif dep.is_vendor
         tp_deps.push(dep)
       else
-        our_deps.push(dep)
+        # use requires to order this array properly
+        # before minification
+        if our_deps.length == 0
+          insert_at = nil
+        else
+          our_deps.each_with_index {|d, i|
+            # provides is an array as well
+            for p in dep.provides
+              if d.requires.include? p
+                puts "#{d.filename} requires #{p}"
+                insert_at = i
+                break
+              end
+            end
+          }
+        end
+        if insert_at.nil?
+          our_deps.push(dep)
+        else
+          our_deps.insert(insert_at, dep)
+        end
       end
     }
     out = File.open(DW['min_file_name'], 'w') do |deps|

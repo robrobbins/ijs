@@ -27,7 +27,7 @@ depwriter:
   i_dir: js
   # are you using the minified version of i.js or the un-minified?
   # choices are 'i.js' or 'i.min.js'
-  i_v: i.min.js
+  i_v: i.js
   # what to call the minified file created in 'production' mode
   min_file_name: production.js
   # For third party scripts that you need to add a dependency to. For example, 
