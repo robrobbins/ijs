@@ -1,12 +1,18 @@
-#I.js Prelude
+#I.js 'Prelude' Edition
 #### Synchronous Javascript dependency manager  
-Why synchronous? Well sometimes you just can't use an async loader because
-of strict limitations on HTTP calls. This version of *i.js* is for this use-case.
-The async version can be found [here](http://www.github.com/robrobbins/I).
+A 2 mode dependency management system that allows for an eloquent require and provide syntax in 
+development, then strips, minifies and concatonates all dependencies for production.
 __Development__ mode features a familiar *I.provide(...)* and *I.require(...)* API
 that resolves each files dependencies before injecting script tags into the dom.
 __Production__ mode strips the *require(...)* calls from your scripts and minifies
-them all into a single file.
+and concatonates them all into a single file.
+
+###Why 'Prelude' Edition?
+This was my original forray into a dependency manager that allowed for a Ruby or Python-esque
+script development style (require 'foo' or import 'bar'). I wanted a Dojo or Google Closure style 
+system decoupled from a parent library. After spending much time hacking on the async version
+found in the [I repo](http://www.github.com/robrobbins/I) I kept finding reasons to use the more traditional 
+'concatonate-to-a-single-file' for production method I started with. 
 
 ##Quick and Dirty Tour Pt1.
 
@@ -84,5 +90,4 @@ id identified by the __config.yaml__ variable *min_file_name*.
 
 ###Blog Posts / Screencasts coming
 
-I'll do some eventually.
-	
+I'll do some eventually.	

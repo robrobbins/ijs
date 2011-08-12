@@ -3,17 +3,18 @@ require 'yaml'
 CFG = YAML.load_file('config.yaml') unless defined? CFG
 DW = CFG['depwriter'] unless defined? DW
 
+# A module for the depwriter that abstracts away the file writing tasks
 module Depfile
   # will need these later for aggregation/minification step
   @tp_deps = []
   @our_deps = []
-  # A module for the depwriter that abstracts away the file writing tasks
+  
   def self.write_dev_file(matched)
     # open a file for writing
     out = File.open(DW['bootstrap'], 'w') do |deps|
       matched.each_value {|dep|
         len = DW['rm_dir'].size
-        if len > 0
+        if len > 0 and not dep.is_cdn
           st = dep.filename.index(DW['rm_dir'])
           fn = dep.filename.slice(st + len, dep.filename.size)
         else

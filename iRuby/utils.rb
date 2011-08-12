@@ -11,9 +11,21 @@ module Utils
   @re_cdn_end = Regexp.new('\/\/ END DW-CDN')
   @MODE_PRO = 'I.amInProduction = true;'
   @MODE_DEV = 'I.amInProduction = false;'
-  @TAG_DEV = "I._writeScriptTag('#{DW['i_dir']}/#{DW['bootstrap']}');"
+  @TAG_DEV = ""
   @TAG_PRO = "I._writeScriptTag('#{DW['i_dir']}/#{DW['min_file_name']}');"
   
+  def self.chk_tag_dev
+    rm = DW['rm_dir']
+    id = DW['i_dir']
+    len = rm.size
+    if len > 0
+      adj = id.slice(id.index(rm)+len, id.size)
+      @TAG_DEV = "I._writeScriptTag('#{adj}/#{DW['bootstrap']}');"
+    else
+      @TAG_DEV = "I._writeScriptTag('#{DW['i_dir']}/#{DW['bootstrap']}');"
+    end
+  end
+
   def self.is_js_file(ref)
     #File.fnmatch('*.js', ref)
     File.extname(ref) == '.js'
@@ -26,7 +38,7 @@ module Utils
   def self.source_files
     @source_files
   end
-  
+
   # return a list of normalized paths from a given root directory
   # expanding any sub-directories found while recursively searching
   def self.expand_directories(search_ext)
@@ -48,6 +60,8 @@ module Utils
   def self.mod_i
     begin_cdn_idx = 0
     end_cdn_idx = 0
+    # adjust TAG_DEV for rm_dir value if present
+    chk_tag_dev()
     # read in the i.js file
     i_js = File.open(DW['i_v'], 'r')
     i_array = i_js.readlines("\n")
