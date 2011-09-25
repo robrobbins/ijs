@@ -17,9 +17,15 @@ Utils.expand_directories(DW['search_ext'])
 # rip through the files looking for provides() / requires(),
 # third-party, cdn hosted and framework plugins
 Dependencies.build_from_files(Utils.source_files)
-Dependencies.add_third_party(Utils.source_files, DW['ven_dirs'])
-Dependencies.add_cdn(DW['cdn_hosted'])
-Dependencies.add_plugins(Utils.source_files, DW['plugin_dirs'])
+if DW['ven_dirs']
+  Dependencies.add_third_party(Utils.source_files, DW['ven_dirs'])
+end
+if DW['cdn_hosted']
+  Dependencies.add_cdn(DW['cdn_hosted'])
+end
+if DW['plugin_dirs']
+  Dependencies.add_plugins(Utils.source_files, DW['plugin_dirs'])
+end
 # put the hash together
 Dependencies.build_matched_hash
 if Dependencies.resolve_deps
@@ -44,3 +50,4 @@ if Dependencies.resolve_deps
 else
   puts "Fail!"
 end
+

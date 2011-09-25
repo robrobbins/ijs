@@ -13,8 +13,12 @@ module Depfile
     # open a file for writing
     out = File.open(DW['bootstrap'], 'w') do |deps|
       matched.each_value {|dep|
-        len = DW['rm_dir'].size
-        if len > 0 and not dep.is_cdn
+        if DW['rm_dir']
+          len = DW['rm_dir'].size
+        else
+          len = nil
+        end
+        if len and not dep.is_cdn
           st = dep.filename.index(DW['rm_dir'])
           fn = dep.filename.slice(st + len, dep.filename.size)
         else
@@ -79,3 +83,4 @@ module Depfile
     end
   end
 end
+

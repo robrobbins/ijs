@@ -25,7 +25,6 @@ module Dependencies
       # should we push this one?
       is_dep = false
       # open the file and read it
-      puts "opening #{file}"
       f = File.open(file)
       # save this so we can minify it later
       dep.txt = f.read
@@ -56,7 +55,6 @@ module Dependencies
       dep = Dependant.new(file)
       # for aggregation to a single file later
       # TODO we could strip the comments
-      puts "opening plugin #{file}"
       f = File.open(file)
       dep.txt = f.read
       f.close
@@ -64,6 +62,7 @@ module Dependencies
       if plugin_dirs.include? File.dirname(file)
         dep.provides_push(File.basename(file, '.js'))
         dep.requires_push(plugin_dirs[File.dirname(file)])
+        puts "adding plugin file: #{dep.filename}"
         @all.unshift(dep)
       end
     }
@@ -77,7 +76,6 @@ module Dependencies
       dep = Dependant.new(file)
       # for aggregation to a single file later
       # TODO we could strip the comments
-      puts "opening plugin #{file}"
       f = File.open(file)
       dep.txt = f.read
       f.close
@@ -85,6 +83,7 @@ module Dependencies
       # ven_dir should have been hashed already
       if ven_dirs.include? File.dirname(file)
         dep.provides_push(File.basename(file, '.js'))
+        puts "adding third party file: #{dep.filename}"
         @all.unshift(dep)
       end
     }
@@ -117,7 +116,6 @@ module Dependencies
         end
       }
     }
-    # @matched.each {|k,v| puts "#{k}: #{v}"}
   end
 
   def self.resolve_deps
@@ -160,3 +158,4 @@ module Dependencies
     @re_requires
   end
 end
+

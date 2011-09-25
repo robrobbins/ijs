@@ -14,7 +14,7 @@ var I = I || {};
  * @define {boolean} Used for the compiler of choice. Written to true when your
  * sources have been minified and combined
  */
-I.amInProduction = false;
+I.amInProduction = true;
 /**
  *
  */
@@ -157,8 +157,9 @@ if(I.amInProduction) {
       '"></' + 'script>');
   };
     // BEGIN DW-CDN
+  I._writeScriptTag('http://code.jquery.com/jquery-1.6.1.min.js');
     // END DW-CDN 
-  I._writeScriptTag('js/bootstrap.js');
+  I._writeScriptTag('js/production.js');
 } else {
   /**
    * This object is used to keep track of dependencies and other data that is
@@ -273,5 +274,5 @@ if(I.amInProduction) {
     }
   };
   // auto set by depwriter
-  I._writeScriptTag('js/bootstrap.js');
+  I._writeScriptTag('js/production.js');
 }

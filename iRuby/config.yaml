@@ -7,7 +7,7 @@ depwriter:
     jQuery: 'http://code.jquery.com/jquery-1.6.1.min.js'
   # Tell depwriter to either prepare the project for production or return it
   # to a development state. Choices are 'production', 'development'.
-  environment: development
+  environment: production
   # Directory paths (relative to root) to exclude from searching for deps.
   # This is particularly useful for testing suites as when you move to
   # production you can simply add the folder name here
